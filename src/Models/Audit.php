@@ -26,7 +26,10 @@ class Audit extends \Hubleto\App\External\WaiBlue\HlthcrCore\Models\HlthcrModel
 
   public string $table = 'hlthcr_audits';
   public string $recordManagerClass = RecordManagers\Audit::class;
-  public ?string $lookupSqlValue = 'concat(date_format({%TABLE%}.date_executed, "%d.%m.%Y"), " - ", ifnull({%TABLE%}.note, ""))';
+  // Date and branch, as in both legacy apps; the newest audits first.
+  public ?string $lookupSqlValue = 'concat(date_format({%TABLE%}.date_executed, "%d.%m.%Y"),
+    ifnull(concat(" - ", (select name from hlthcr_branches where hlthcr_branches.id = {%TABLE%}.id_branch)), ""))';
+  public string $lookupOrderBy = '{%TABLE%}.date_executed desc';
   public ?string $lookupUrlDetail = 'hlthcr-audits/audits/{%ID%}';
 
   public array $relations = [
