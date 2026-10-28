@@ -1,6 +1,6 @@
 {
     "name": "wai-blue/hubleto-hlthcr-audits",
-    "license": "MIT",
+    "license": "proprietary",
     "description": "Hlthcr for Hubleto: Audits of the branches with validity, documents, calendar and the home panel of upcoming audits",
     "require": {
         "wai-blue/hubleto-hlthcr-core": "dev-main",
