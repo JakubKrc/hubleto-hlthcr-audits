@@ -2,6 +2,8 @@
 
 namespace Hubleto\App\External\WaiBlue\HlthcrAudits\Models;
 
+use Hubleto\App\External\WaiBlue\HlthcrCore\Services\Roles;
+use Hubleto\App\External\WaiBlue\HlthcrCore\Controllers\Api\UserLookup;
 use Hubleto\App\Community\Auth\Models\User;
 use Hubleto\App\External\WaiBlue\HlthcrBranches\Models\Branch;
 use Hubleto\App\External\WaiBlue\HlthcrCore\Services\MonthDates;
@@ -48,7 +50,7 @@ class Audit extends \Hubleto\App\External\WaiBlue\HlthcrCore\Models\HlthcrModel
       'valid_to_typed' => (new Boolean($this, $this->translate('Validity typed'))),
       'note' => (new Text($this, $this->translate('Note / purpose of the visit')))->setDefaultVisible(),
       'id_hygienist' => (new Lookup($this, $this->translate('Hygienist'), User::class))
-        ->setReactComponent('InputUserSelect')
+        ->setEndpoint(UserLookup::endpointFor(Roles::HYGIENIST, 'id_hygienist'))
         ->setDefaultVisible()
       ,
     ]);
