@@ -35,7 +35,7 @@ class Audit extends \Hubleto\App\External\WaiBlue\HlthcrCore\Models\HlthcrModel
   public function describeColumns(): array
   {
     return array_merge(parent::describeColumns(), [
-      'id_branch' => (new Lookup($this, $this->translate('Branch'), Branch::class, 'CASCADE'))
+      'id_branch' => (new Lookup($this, $this->translate('Branch'), Branch::class, 'RESTRICT'))
         ->setRequired()
         ->setDefaultVisible()
       ,
