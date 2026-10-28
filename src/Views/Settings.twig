@@ -1,0 +1,13 @@
+<div class="flex items-center">
+  <h1 class="app-main-title">{{ translate('Audits') }} > {{ translate('Settings') }}</h1>
+</div>
+
+<div class="card mt-10 w-1/2 m-auto">
+  <div class="card-body">
+    <p class="mb-4">{{ translate('An audit is valid until the audit date plus the audit interval of the client. Each client has its own interval; new clients get the default from the Clients settings.') }}</p>
+    <a href="{{ config.projectUrl }}/hlthcr-clients/settings" class="btn btn-transparent">
+      <span class="icon"><i class="fas fa-building"></i></span>
+      <span class="text">{{ translate('Default audit interval') }}</span>
+    </a>
+  </div>
+</div>

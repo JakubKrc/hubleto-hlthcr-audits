@@ -1,0 +1,42 @@
+{
+    "manifest": {
+        "Audits": "Audity",
+        "Audit": "Audit",
+        "Calendar": "Kalendár",
+        "Upcoming audits": "Najbližšie audity",
+        "Audits of client branches with their validity from the client audit interval, calendar and home panel.": "Audity prevádzok klientov s platnosťou podľa intervalu auditov klienta, kalendárom a panelom na úvodnej stránke.",
+        "Settings": "Nastavenia"
+    },
+    "Models\\Audit": {
+        "Branch": "Prevádzka",
+        "Audit date": "Dátum auditu",
+        "Valid to": "Platnosť",
+        "Note / purpose of the visit": "Poznámka / účel návštevy",
+        "Add audit": "Pridať audit",
+        "Left empty, it is the audit date plus the audit interval of the client.": "Ak je prázdne, je to dátum auditu plus interval auditov klienta.",
+        "Hygienist": "Hygienik",
+        "Validity typed": "Platnosť zadaná ručne",
+        "The audit cannot be valid to a date before the audit.": "Platnosť auditu nemôže skončiť pred dátumom auditu."
+    },
+    "Controllers\\Boards\\UpcomingAudits": {
+        "No audits in the next month.": "Žiadne audity v najbližšom mesiaci."
+    },
+    "Calendar": {
+        "Audits": "Audity",
+        "Audit - {{ branch }}": "Audit - {{ branch }}",
+        "End of audit validity - {{ branch }}": "Koniec platnosti auditu - {{ branch }}"
+    },
+    "Components\\FormAudit": {
+        "Audit": "Audit"
+    },
+    "Loader": {
+        "Audits": "Audity",
+        "Save the branch first.": "Najprv uložte prevádzku."
+    },
+    "Controllers\\Settings": {
+        "Audits": "Audity",
+        "Settings": "Nastavenia",
+        "An audit is valid until the audit date plus the audit interval of the client. Each client has its own interval; new clients get the default from the Clients settings.": "Audit platí do dátumu auditu plus interval auditov klienta. Každý klient má vlastný interval; noví klienti dostanú predvolený z nastavení Klientov.",
+        "Default audit interval": "Predvolený interval auditov"
+    }
+}

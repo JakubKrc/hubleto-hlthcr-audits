@@ -1,0 +1,17 @@
+{% if viewParams.audits|length == 0 %}
+  <div class="alert alert-info">{{ translate('No audits in the next month.') }}</div>
+{% else %}
+  <table class="table-default dense w-full">
+    {% for audit in viewParams.audits %}
+      <tr>
+        <td>{{ audit.BRANCH.name }} <small>{{ audit.note }}</small></td>
+        <td>{{ audit.date_executed|date('d.m.Y') }}</td>
+        <td class="text-right">
+          <a href="hlthcr-audits/audits/{{ audit.id }}" class="btn btn-transparent btn-small">
+            <span class="icon"><i class="fas fa-arrow-right"></i></span>
+          </a>
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+{% endif %}
