@@ -93,7 +93,7 @@ class Loader extends \Hubleto\App\External\WaiBlue\HlthcrCore\HlthcrApp
    * For the first branch of each demo client: an audit from last year and a planned one in two weeks (FAKE data).
    * Records are inserted directly: the model rules use the logged-in user, and there is none on the command line.
    */
-  public function generateDemoData(): void
+  public function generateHlthcrDemoData(): void
   {
     /** @var Models\Audit */
     $mAudit = $this->getModel(Models\Audit::class);
