@@ -16,7 +16,8 @@
         "Left empty, it is the audit date plus the audit interval of the client.": "Ak je prázdne, je to dátum auditu plus interval auditov klienta.",
         "Hygienist": "Hygienik",
         "Validity typed": "Platnosť zadaná ručne",
-        "The audit cannot be valid to a date before the audit.": "Platnosť auditu nemôže skončiť pred dátumom auditu."
+        "The audit cannot be valid to a date before the audit.": "Platnosť auditu nemôže skončiť pred dátumom auditu.",
+        "The chosen user does not exist.": "Zvolený používateľ neexistuje."
     },
     "Controllers\\Boards\\UpcomingAudits": {
         "No audits in the next month.": "Žiadne audity v najbližšom mesiaci."

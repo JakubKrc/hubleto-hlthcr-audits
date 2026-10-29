@@ -2,6 +2,7 @@
 
 namespace Hubleto\App\External\WaiBlue\HlthcrAudits\Models;
 
+use Hubleto\App\External\WaiBlue\HlthcrCore\Models\Traits\RefusesUnknownUser;
 use Hubleto\App\External\WaiBlue\HlthcrCore\Services\Roles;
 use Hubleto\App\External\WaiBlue\HlthcrCore\Controllers\Api\UserLookup;
 use Hubleto\App\Community\Auth\Models\User;
@@ -22,6 +23,7 @@ use Hubleto\App\External\WaiBlue\HlthcrCore\Models\Traits\EmptyDatesAsNull;
  */
 class Audit extends \Hubleto\App\External\WaiBlue\HlthcrCore\Models\HlthcrModel
 {
+  use RefusesUnknownUser;
   use EmptyDatesAsNull;
 
   public string $table = 'hlthcr_audits';
@@ -96,6 +98,7 @@ class Audit extends \Hubleto\App\External\WaiBlue\HlthcrCore\Models\HlthcrModel
     if (empty($record['id_hygienist'])) {
       $record['id_hygienist'] = $this->authProvider()->getUserId();
     }
+    $this->refuseUnknownUser($record, 'id_hygienist');
     $record['valid_to_typed'] = !empty($record['date_valid_to']);
     return $this->fillValidTo($record);
   }
@@ -105,6 +108,7 @@ class Audit extends \Hubleto\App\External\WaiBlue\HlthcrCore\Models\HlthcrModel
   {
     $record = parent::onBeforeUpdate($record);
     $record = $this->emptyDatesAsNull($record);
+    $this->refuseUnknownUser($record, 'id_hygienist');
 
     $originalAudit = $this->record->where('id', (int) $record['id'])->first();
     if ($originalAudit) {
