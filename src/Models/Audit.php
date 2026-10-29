@@ -68,9 +68,10 @@ class Audit extends \Hubleto\App\External\WaiBlue\HlthcrCore\Models\HlthcrModel
     $description->ui['orderBy'] = ['field' => 'date_executed', 'direction' => 'desc'];
     $description->show(['header', 'fulltextSearch', 'columnSearch', 'moreActionsButton']);
     $description->hide(['footer']);
+    // An internal flag of the validity rule, not a column for users.
+    $description->hideColumns(['valid_to_typed']);
     // In the branch's tab the branch is known, so its column is left out (both legacy apps).
     if ($this->router()->urlParamAsInteger('idBranch') > 0) $description->hideColumns(['id_branch']);
-
 
     return $description;
   }
