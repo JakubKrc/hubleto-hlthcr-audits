@@ -2,7 +2,7 @@
 
 namespace Hubleto\App\External\WaiBlue\HlthcrAudits;
 
-use Hubleto\App\External\WaiBlue\HlthcrCore\Services\Roles;
+use Hubleto\App\External\WaiBlue\HlthcrCore\Services\CalendarAuthor;
 
 /**
  * Audits in the Hubleto calendar (legacy colour red): the audit date and the end of its validity.
@@ -61,10 +61,7 @@ class Calendar extends \Hubleto\App\Community\Calendar\Calendar
       })
     ;
 
-    $idAuthor = (int) ($filter['idUser'] ?? 0);
-    $showsOnlyMyEvents = (int) ($filter['fOwnership'] ?? 0) == 1;
-    $canSeeAllAuditEvents = $this->getService(Roles::class)->isActiveUserAdministratorOrManager();
-    if ($showsOnlyMyEvents || !$canSeeAllAuditEvents) $idAuthor = $this->authProvider()->getUserId();
+    $idAuthor = $this->getService(CalendarAuthor::class)->getAuthorIdToShow($filter);
     if ($idAuthor > 0) {
       $query = $query->where('hlthcr_audits.id_hygienist', $idAuthor);
     }
