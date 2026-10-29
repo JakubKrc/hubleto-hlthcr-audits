@@ -10,13 +10,15 @@ const componentName = 'FormAudit';
 const parentApp = 'Hubleto/App/External/WaiBlue/HlthcrAudits';
 const T = new Translator(parentApp + '/Loader', 'Components/' + componentName);
 
-// The branch stays as created (the server keeps it), so it is read-only after saving.
+// The branch stays as created (the server keeps it), so it is read-only after saving
+// and when the audit is added in the branch's tab (both legacy apps).
 const TabDefault = () => {
   const form = React.useContext(FormMetaContext);
   const isSaved = form.id > 0;
+  const isBranchGiven = Number(form.description?.defaultValues?.id_branch ?? 0) > 0;
   return <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
     <div>
-      <Input field='id_branch' readonly={isSaved} />
+      <Input field='id_branch' readonly={isSaved || isBranchGiven} />
       <Input field='date_executed' />
       <Input field='date_valid_to' />
     </div>
