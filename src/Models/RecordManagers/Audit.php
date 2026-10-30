@@ -62,7 +62,8 @@ class Audit extends \Hubleto\Erp\RecordManager
     $query = parent::addUrlFiltersToQuery($query);
     $query = $this->filterByBranchFromUrl($query);
 
-    $filters = $this->router()->urlParamAsArray('filters');
+    $hubleto = \Hubleto\Erp\Loader::getGlobalApp();
+    $filters = $hubleto->router()->urlParamAsArray('filters');
     $selectedStates = (array) ($filters[self::STATE_FILTER] ?? []);
     return Workflow::applyWorkflowStepFilter($this->model, $query, $selectedStates);
   }
