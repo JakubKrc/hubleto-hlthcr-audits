@@ -9,6 +9,7 @@ author:
   nick: "hlthcr"
 highlight: Audits of client branches with their validity from the client audit interval, calendar and home panel.
 requires:
+  - Hubleto\App\Community\Workflow
   - Hubleto\App\Community\Calendar
   - Hubleto\App\Community\Dashboards
   - Hubleto\App\External\WaiBlue\HlthcrCore

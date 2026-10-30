@@ -16,15 +16,22 @@ use Hubleto\Framework\Db\Column\Text;
 use Hubleto\App\Community\Customers\Models\Customer;
 use Hubleto\App\External\WaiBlue\HlthcrClients\Services\CustomerColumns;
 use Hubleto\App\External\WaiBlue\HlthcrCore\Models\Traits\EmptyDatesAsNull;
+use Hubleto\App\External\WaiBlue\HlthcrCore\Models\Traits\StaysInOwnWorkflow;
+use Hubleto\App\Community\Workflow\Models\Workflow;
+use Hubleto\App\Community\Workflow\Models\WorkflowStep;
 
 /**
  * Audit (visit) of a branch by its hygienist. Valid until the next audit is due:
- * the audit date plus the client's audit interval, unless typed. Closing an audit was in one legacy app only and is left out.
+ * the audit date plus the client's audit interval, unless typed. Its state is a workflow step: open or closed,
+ * what both legacy apps share (MioMed closes an audit, Medison sets it "Ukončený").
  */
 class Audit extends \Hubleto\App\External\WaiBlue\HlthcrCore\Models\HlthcrModel
 {
   use RefusesUnknownUser;
   use EmptyDatesAsNull;
+  use StaysInOwnWorkflow;
+
+  const WORKFLOW_GROUP = 'hlthcr_audits';
 
   public string $table = 'hlthcr_audits';
   public string $recordManagerClass = RecordManagers\Audit::class;
@@ -37,6 +44,8 @@ class Audit extends \Hubleto\App\External\WaiBlue\HlthcrCore\Models\HlthcrModel
   public array $relations = [
     'BRANCH' => [ self::BELONGS_TO, Branch::class, 'id_branch', 'id' ],
     'HYGIENIST' => [ self::BELONGS_TO, User::class, 'id_hygienist', 'id' ],
+    'WORKFLOW' => [ self::BELONGS_TO, Workflow::class, 'id_workflow', 'id' ],
+    'WORKFLOW_STEP' => [ self::BELONGS_TO, WorkflowStep::class, 'id_workflow_step', 'id' ],
   ];
 
   public function describeColumns(): array
@@ -58,6 +67,11 @@ class Audit extends \Hubleto\App\External\WaiBlue\HlthcrCore\Models\HlthcrModel
         ->setEndpoint(UserLookup::endpointFor(Roles::HYGIENIST, 'id_hygienist'))
         ->setDefaultVisible()
       ,
+      'id_workflow' => (new Lookup($this, $this->translate('Workflow'), Workflow::class))->setReadonly(),
+      'id_workflow_step' => (new Lookup($this, $this->translate('State'), WorkflowStep::class))
+        ->setDefaultVisible()
+        ->setReadonly()
+      ,
     ]);
   }
 
@@ -73,6 +87,11 @@ class Audit extends \Hubleto\App\External\WaiBlue\HlthcrCore\Models\HlthcrModel
     // In the branch's tab the branch is known, so its column is left out (both legacy apps).
     if ($this->router()->urlParamAsInteger('idBranch') > 0) $description->hideColumns(['id_branch']);
 
+    $description->addFilter(
+      RecordManagers\Audit::STATE_FILTER,
+      Workflow::buildTableFilterForWorkflowSteps($this, $this->translate('State'))
+    );
+
     return $description;
   }
 
@@ -86,7 +105,7 @@ class Audit extends \Hubleto\App\External\WaiBlue\HlthcrCore\Models\HlthcrModel
 
   public function getRelationsIncludedInLoadTableData(): array|null
   {
-    return ['BRANCH', 'HYGIENIST'];
+    return ['BRANCH', 'HYGIENIST', 'WORKFLOW_STEP'];
   }
 
   public function getMaxReadLevelForLoadTableData(): int
@@ -103,6 +122,7 @@ class Audit extends \Hubleto\App\External\WaiBlue\HlthcrCore\Models\HlthcrModel
     }
     $this->refuseUnknownUser($record, 'id_hygienist');
     $record['valid_to_typed'] = !empty($record['date_valid_to']);
+    $record = $this->dropSentWorkflow($record);
     return $this->fillValidTo($record);
   }
 
@@ -112,6 +132,7 @@ class Audit extends \Hubleto\App\External\WaiBlue\HlthcrCore\Models\HlthcrModel
     $record = parent::onBeforeUpdate($record);
     $record = $this->emptyDatesAsNull($record);
     $this->refuseUnknownUser($record, 'id_hygienist');
+    $this->refuseWorkflowOfOtherGroup($record, self::WORKFLOW_GROUP);
 
     $originalAudit = $this->record->where('id', (int) $record['id'])->first();
     if ($originalAudit) {
@@ -120,6 +141,25 @@ class Audit extends \Hubleto\App\External\WaiBlue\HlthcrCore\Models\HlthcrModel
     }
 
     return $this->fillValidTo($record);
+  }
+
+  public function onAfterCreate(array $savedRecord): array
+  {
+    $savedRecord = parent::onAfterCreate($savedRecord);
+
+    // New audits start in the first step of the audit workflow ("open").
+    /** @var Workflow */
+    $mWorkflow = $this->getModel(Workflow::class);
+    $savedRecord = $mWorkflow->applyDefaultWorkflow($savedRecord, self::WORKFLOW_GROUP);
+
+    // Only the workflow columns: a whole update would run the validity rule again.
+    $this->record->where('id', $savedRecord['id'])->update([
+      'id_workflow' => $savedRecord['id_workflow'] ?? null,
+      'id_workflow_step' => $savedRecord['id_workflow_step'] ?? null,
+    ]);
+    $this->logFirstWorkflowStep($savedRecord);
+
+    return $savedRecord;
   }
 
   // The validity is typed when this save changes it to a value; emptying it lets it be computed again.

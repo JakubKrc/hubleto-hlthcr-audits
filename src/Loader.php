@@ -3,11 +3,17 @@
 namespace Hubleto\App\External\WaiBlue\HlthcrAudits;
 
 use Hubleto\App\Community\Customers\Models\Customer;
+use Hubleto\App\Community\Workflow\Models\Workflow as WorkflowModel;
+use Hubleto\App\Community\Workflow\Models\WorkflowStep;
 use Hubleto\App\External\WaiBlue\HlthcrBranches\Models\Branch;
 use Hubleto\App\External\WaiBlue\HlthcrCore\Services\DemoData;
 
 class Loader extends \Hubleto\App\External\WaiBlue\HlthcrCore\HlthcrApp
 {
+  // Tags of the audit workflow steps: open or closed, what both legacy apps share.
+  const STEP_OPEN = 'hlthcr-audit-open';
+  const STEP_CLOSED = 'hlthcr-audit-closed';
+
   public function init(): void
   {
     parent::init();
@@ -28,6 +34,10 @@ class Loader extends \Hubleto\App\External\WaiBlue\HlthcrCore\HlthcrApp
     /** @var \Hubleto\App\Community\Dashboards\Manager $dashboardManager */
     $dashboardManager = $this->getService(\Hubleto\App\Community\Dashboards\Manager::class);
     $dashboardManager->addBoard($this, $this->translate('Upcoming audits'), 'hlthcr-audits/boards/upcoming-audits');
+
+    /** @var \Hubleto\App\Community\Workflow\Manager $workflowManager */
+    $workflowManager = $this->getService(\Hubleto\App\Community\Workflow\Manager::class);
+    $workflowManager->addWorkflowGroup($this, Models\Audit::WORKFLOW_GROUP, Workflow::class);
   }
 
   public function installApp(int $round): void
@@ -36,7 +46,75 @@ class Loader extends \Hubleto\App\External\WaiBlue\HlthcrCore\HlthcrApp
       $this->getModel(Models\Audit::class)->upgradeSchema();
       // "php hubleto app install" runs only round 1, so foreign keys are created here too (Hubleto skips them later).
       $this->installForeignKeys();
+
+      $this->installAuditWorkflow();
+      $this->putAuditsWithoutStateIntoWorkflow();
     }
+  }
+
+  /**
+   * Creates the audit workflow, or adds the steps an older install does not have yet.
+   * The first step is the default for new audits.
+   */
+  // Public for the migration Audit_0005: "php hubleto migrate" does not run installApp().
+  public function installAuditWorkflow(): void
+  {
+    /** @var WorkflowModel */
+    $mWorkflow = $this->getModel(WorkflowModel::class);
+    /** @var WorkflowStep */
+    $mWorkflowStep = $this->getModel(WorkflowStep::class);
+
+    $workflow = $mWorkflow->record->where('group', Models\Audit::WORKFLOW_GROUP)->first();
+    if ($workflow) {
+      $idWorkflow = (int) $workflow->id;
+    } else {
+      $idWorkflow = (int) $mWorkflow->record->recordCreate([
+        'name' => $this->translate('Audits'),
+        'show_in_kanban' => 1,
+        'order' => 55,
+        'group' => Models\Audit::WORKFLOW_GROUP,
+      ])['id'];
+    }
+
+    $steps = [
+      ['name' => $this->translate('In progress'), 'color' => '#e27300', 'tag' => self::STEP_OPEN],
+      ['name' => $this->translate('Closed'), 'color' => '#4caf50', 'tag' => self::STEP_CLOSED],
+    ];
+    $order = 1;
+    foreach ($steps as $step) {
+      $existingStep = $mWorkflowStep->record->where('id_workflow', $idWorkflow)->where('tag', $step['tag'])->first();
+      if ($existingStep) {
+        $existingStep->update(['order' => $order]);
+      } else {
+        $mWorkflowStep->record->recordCreate([
+          'id_workflow' => $idWorkflow,
+          'name' => $step['name'],
+          'color' => $step['color'],
+          'tag' => $step['tag'],
+          'order' => $order,
+        ]);
+      }
+      $order++;
+    }
+  }
+
+  // Audits from before the workflow, and demo audits: a past audit has taken place, so it is closed.
+  public function putAuditsWithoutStateIntoWorkflow(): void
+  {
+    $openStep = $this->getModel(WorkflowStep::class)->record->where('tag', self::STEP_OPEN)->first();
+    $closedStep = $this->getModel(WorkflowStep::class)->record->where('tag', self::STEP_CLOSED)->first();
+    if (!$openStep || !$closedStep) return;
+
+    /** @var Models\Audit */
+    $mAudit = $this->getModel(Models\Audit::class);
+    $mAudit->record->whereNull('id_workflow_step')->where('date_executed', '<', date('Y-m-d'))->update([
+      'id_workflow' => $closedStep->id_workflow,
+      'id_workflow_step' => $closedStep->id,
+    ]);
+    $mAudit->record->whereNull('id_workflow_step')->update([
+      'id_workflow' => $openStep->id_workflow,
+      'id_workflow_step' => $openStep->id,
+    ]);
   }
 
   public function search(array $expressions): array
@@ -119,5 +197,7 @@ class Loader extends \Hubleto\App\External\WaiBlue\HlthcrCore\HlthcrApp
         'id_hygienist' => $branch->id_owner,
       ]);
     }
+
+    $this->putAuditsWithoutStateIntoWorkflow();
   }
 }

@@ -5,7 +5,9 @@
         "Calendar": "Kalendár",
         "Upcoming audits": "Najbližšie audity",
         "Audits of client branches with their validity from the client audit interval, calendar and home panel.": "Audity prevádzok klientov s platnosťou podľa intervalu auditov klienta, kalendárom a panelom na úvodnej stránke.",
-        "Settings": "Nastavenia"
+        "Settings": "Nastavenia",
+        "In progress": "Rozpracovaný",
+        "Closed": "Ukončený"
     },
     "Models\\Audit": {
         "Branch": "Prevádzka",
@@ -17,7 +19,10 @@
         "Hygienist": "Hygienik",
         "Validity typed": "Platnosť zadaná ručne",
         "The audit cannot be valid to a date before the audit.": "Platnosť auditu nemôže skončiť pred dátumom auditu.",
-        "The chosen user does not exist.": "Zvolený používateľ neexistuje."
+        "The chosen user does not exist.": "Zvolený používateľ neexistuje.",
+        "Workflow": "Workflow",
+        "State": "Stav",
+        "Choose a state of this record's own workflow.": "Vyberte stav z vlastného workflow tohto záznamu."
     },
     "Controllers\\Boards\\UpcomingAudits": {
         "No audits in the next month.": "Žiadne audity v najbližšom mesiaci."
@@ -38,6 +43,8 @@
         "Audits": "Audity",
         "Settings": "Nastavenia",
         "An audit is valid until the audit date plus the audit interval of the client. Each client has its own interval; new clients get the default from the Clients settings.": "Audit platí do dátumu auditu plus interval auditov klienta. Každý klient má vlastný interval; noví klienti dostanú predvolený z nastavení Klientov.",
-        "Default audit interval": "Predvolený interval auditov"
+        "Default audit interval": "Predvolený interval auditov",
+        "The states of audits are a workflow. You can rename them or add your own states.": "Stavy auditov sú workflow. Môžete ich premenovať alebo pridať vlastné.",
+        "Audit states": "Stavy auditov"
     }
 }

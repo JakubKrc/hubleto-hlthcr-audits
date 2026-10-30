@@ -9,5 +9,12 @@
       <span class="icon"><i class="fas fa-building"></i></span>
       <span class="text">{{ translate('Default audit interval') }}</span>
     </a>
+    <p class="mb-4 mt-6">{{ translate('The states of audits are a workflow. You can rename them or add your own states.') }}</p>
+    {% if viewParams.mayEditWorkflows %}
+      <a href="{{ config.projectUrl }}/workflow/workflows" class="btn btn-transparent">
+        <span class="icon"><i class="fas fa-timeline"></i></span>
+        <span class="text">{{ translate('Audit states') }}</span>
+      </a>
+    {% endif %}
   </div>
 </div>
